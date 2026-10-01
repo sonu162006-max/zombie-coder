@@ -2,6 +2,10 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>C Zombie Coder</title>
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <style>
 :root{--bg:#0b0f14;--pn:#141b24;--ink:#e6edf3;--mut:#8b98a5;--g:#3ddc84;--r:#ff4d4d;--y:#ffd54a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *{box-sizing:inherit}
@@ -229,7 +233,7 @@ if(g.st=='play'){g.left-=dt;g.dv+=(.06+.62*g.left/g.dur-g.dv)*Math.min(1,dt*8);[
 else if(g.st=='shoot'){g.bx+=900*dt;if(g.bx>=g.zx){g.st='boom';g.tm=.5;sfx('k')}}
 else if(g.st=='boom'){g.tm-=dt;if(g.tm<=0)nxt()}
 else if(g.st=='dead'){g.tm-=dt;if(g.tm<=0){if(g.lives<=0)fin(false);else nxt()}}
-const p=P[g.i];$('hl').textContent=`Lvl ${p.l} • ${g.i+1}${g.en?'':'/'+P.length} `+'❤️'.repeat(Math.max(0,g.lives));$('hs').textContent='⭐ '+g.score+(g.en?' 🔥'+(1+Math.floor(g.solved/3)):'');$('ht').textContent='⏱ '+Math.ceil(g.left)+'s';
+const p=P[g.i];$('hl').textContent=`Lvl ${p.l} • ${g.i+1}${g.en?'':'/'+P.length} `+'❤️'.repeat(Math.max(0,g.lives));$('hs').textContent='�� '+g.score+(g.en?' 🔥'+(1+Math.floor(g.solved/3)):'');$('ht').textContent='⏱ '+Math.ceil(g.left)+'s';
 const f=g.left/g.dur;$('fill').style.width=f*100+'%';const c=f<.3?'var(--r)':f<.6?'var(--y)':'var(--g)';$('fill').style.background=c;$('ht').style.color=f<.3?'var(--r)':''}
 const em=(e,x,y,s)=>{cx.font=s+'px serif';cx.textAlign='center';cx.fillText(e,x,y)};
 function draw(now){if(g.st=='idle'||$('game').hidden)return;const gy=H-14,hz=H*.5,s=Math.min(46,H*.4);
