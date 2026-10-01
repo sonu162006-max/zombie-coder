@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C Zombie Coder</title>
+<style>
+:root{--bg:#0b0f14;--pn:#141b24;--ink:#e6edf3;--mut:#8b98a5;--g:#3ddc84;--r:#ff4d4d;--y:#ffd54a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:inherit}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif}
+#app{max-width:1000px;margin:0 auto;padding:0 8px 12px}
+[hidden]{display:none!important}
+button{font:inherit;color:var(--ink);background:#22303f;border:1px solid #33465a;border-radius:8px;padding:9px 12px;cursor:pointer}
+button.p{background:var(--g);color:#04210f;border:0;font-weight:700}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-top:6px}
+.hud{display:flex;justify-content:space-between;font-weight:700;padding:2px 2px 4px}
+#bar{height:8px;background:#22303f;border-radius:4px;overflow:hidden;margin-bottom:6px}
+#fill{display:block;height:100%;background:var(--g);width:100%}
+canvas{width:100%;height:120px;display:block;border-radius:10px}
+.tg{padding:2px 7px;margin-left:4px}
+.main{display:grid;gap:8px;grid-template-columns:1fr;margin-top:8px}
+.card{background:var(--pn);border-radius:10px;padding:10px}
+#prob{font-size:15px}
+.io{display:flex;gap:8px}
+.io>div{flex:1;min-width:0}
+.lbl{color:var(--mut);font-size:12px;margin-bottom:2px}
+pre{margin:0;background:#05080b;border-radius:8px;padding:8px;font:12px/1.35 ui-monospace,Menlo,monospace;height:76px;overflow:auto;white-space:pre-wrap;color:var(--g)}
+pre.e{color:var(--r)}
+.sym{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.sym button{padding:7px 10px;font-family:ui-monospace,monospace;min-width:36px}
+textarea{width:100%;height:140px;background:#05080b;color:#e6edf3;border:1px solid #33465a;border-radius:8px;padding:8px;font:14px/1.4 ui-monospace,Menlo,monospace;resize:none;tab-size:2}
+.row{display:flex;gap:8px;margin-top:6px}.row .p{flex:1}
+.scr{text-align:center;padding:30px 8px}
+.scr h1{margin:0 0 8px}.scr p{color:var(--mut)}
+.lv{display:grid;gap:8px;max-width:340px;margin:16px auto}
+.ov{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:12px;z-index:9}
+.ov>div{background:var(--pn);border-radius:14px;padding:16px;max-width:460px;width:100%;max-height:92%;overflow:auto}
+.ov h2{margin:0 0 8px}.ov pre{height:auto;max-height:110px}
+.st{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.st b{color:var(--y);font-size:18px;display:block}
+.pod{display:flex;justify-content:space-between;padding:10px 12px;border-radius:10px;margin:6px 0;font-size:16px}
+.p0{background:#4a3c00;color:var(--y)}.p1{background:#2b3238}.p2{background:#3a2a1a}
+.rw{display:flex;justify-content:space-between;padding:7px 10px;border-bottom:1px solid #22303f}
+.me{outline:2px solid var(--g)}.lbt{font-weight:700;margin:6px 0}#lbc{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}#lbc button{padding:5px 9px}
+@media(min-width:820px){canvas{height:160px}.main{grid-template-columns:1.4fr 1fr}#prob{grid-column:1;grid-row:1}.ed{grid-column:1;grid-row:2}.io{grid-column:2;grid-row:1/3;flex-direction:column}pre{height:auto;flex:1;min-height:110px}.io>div{display:flex;flex-direction:column}textarea{height:200px}}
+</style></head><body><div id="app">
+<div id="menu" class="scr"><h1>🧟 C Zombie Coder</h1>
+<p>Solve C problems before the zombies reach you.<br>3 lives ❤️❤️❤️</p>
+<div id="who" style="margin-top:8px"></div><div class="lv" id="lv"></div><button id="lbb">🏆 Leaderboard</button><p id="best"></p></div>
+<div id="game" hidden>
+<div class="top"><div class="hud"><span id="hl"></span><span id="hs"></span><span id="ht"></span><span><button class="tg" id="bp">⏸</button><button class="tg" id="bs">🔊</button><button class="tg" id="bm">🎵</button></span></div><div id="bar"><i id="fill"></i></div><canvas id="cv"></canvas></div>
+<div class="main">
+<div id="prob" class="card"></div>
+<div class="io"><div><div class="lbl">🎯 Expected output</div><pre id="exp"></pre></div><div><div class="lbl">📟 Your output</div><pre id="out"></pre></div></div>
+<div class="ed"><div class="sym" id="sym"></div>
+<textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+<div class="row"><button class="p" id="run">▶ Run</button><button id="hint">💡 Hint (-5s)</button></div></div>
+</div></div>
+<div id="res" class="ov" hidden></div>
+<div id="ps" class="ov" hidden style="background:#000e"><div style="text-align:center"><h2>⏸ Paused</h2><div class="row"><button class="p" id="rsm">▶ Resume</button><button id="lvg">🚪 Leave</button></div></div></div>
+<div id="nm" class="ov" hidden style="z-index:20;background:#000e"><div style="text-align:center"><h2>👋 Your name</h2><p id="ne" style="color:var(--r);min-height:1.4em;margin:4px 0"></p><input id="ni" maxlength="20" placeholder="Name" autocomplete="off" style="width:100%;padding:11px;font:16px system-ui;border-radius:8px;border:1px solid #33465a;background:#05080b;color:var(--ink);text-align:center"><div class="row"><button class="p" id="nb">OK</button></div></div></div>
+<div id="lbo" class="ov" hidden><div><h2 style="margin:0">🏆 Leaderboard</h2><div id="lbc"></div><div id="lbl"></div><p id="lbs" style="color:var(--mut);font-size:12px"></p><div class="row"><button class="p" id="lbx">Close</button></div></div></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+/* ---------- Mini C interpreter ---------- */
+function runC(src){
+if(!/\bmain\b/.test(src))src='int main(){'+src+'\n}';
+let out='',steps=0;const T=[];
+const re=/\s+|\/\/.*|\/\*[\s\S]*?\*\/|#.*|(\d+\.?\d*)|([A-Za-z_]\w*)|("(?:\\.|[^"\\])*")|('(?:\\.|[^'\\])')|(\+\+|--|->|\+=|-=|\*=|\/=|%=|==|!=|<=|>=|&&|\|\||[-+*\/%=<>!(){}\[\];,&.])/y;
+const es=s=>s.replace(/\\(.)/g,(a,c)=>({n:'\n',t:'\t','0':'\0'}[c]??c));
+try{
+let m,p=0;
+while(p<src.length){re.lastIndex=p;m=re.exec(src);if(!m)throw'Unexpected character: '+src[p];p=re.lastIndex;
+if(m[1])T.push({t:'n',v:+m[1]});else if(m[2])T.push({t:'i',v:m[2]});else if(m[3])T.push({t:'s',v:es(m[3].slice(1,-1))});else if(m[4])T.push({t:'n',v:es(m[4].slice(1,-1)).charCodeAt(0)});else if(m[5])T.push({t:'o',v:m[5]})}
+let i=0;const pk=()=>T[i],nx=()=>T[i++];
+const isO=v=>T[i]&&T[i].t=='o'&&T[i].v==v,isI=v=>T[i]&&T[i].t=='i'&&T[i].v==v;
+const ex=v=>{if(!isO(v))throw`Missing '${v}'`;i++};
+const L=[['||'],['&&'],['==','!='],['<','>','<=','>='],['+','-'],['*','/','%']];
+const bin=l=>{if(l>=L.length)return un();let a=bin(l+1);while(T[i]&&T[i].t=='o'&&L[l].includes(T[i].v)){const o=nx().v;a=['b',o,a,bin(l+1)]}return a};
+const asg=()=>{const a=bin(0);if(T[i]&&T[i].t=='o'&&/^([-+*\/%])?=$/.test(T[i].v)){const o=nx().v;return['a',o,a,asg()]}return a};
+const un=()=>{if(isO('*')){i++;return['*',un()]}if(isO('&')){i++;return['&',un()]}if(isO('-')){i++;return['b','-',['n',0],un()]}if(isO('!')){i++;return['!',un()]}if(isO('++')||isO('--')){const o=nx().v;return['a',o[0]+'=',un(),['n',1]]}return post()};
+const post=()=>{let a=prim();for(;;){if(isO('[')){i++;const x=asg();ex(']');a=['x',a,x]}else if(isO('++')||isO('--')){a=['p',nx().v[0],a]}else if(isO('.')||isO('->')){i++;a=['m',a,nx().v]}else break}return a};
+const prim=()=>{const t=nx();if(!t)throw'Incomplete code';if(t.t=='n')return['n',t.v];if(t.t=='s')return['s',t.v];
+if(t.t=='i'){if(isO('(')){i++;const a=[];while(!isO(')')){if(!T[i])throw'Missing ")"';a.push(asg());if(isO(','))i++}i++;return['c',t.v,a]}return['v',t.v]}
+if(t.v=='('){const e=asg();ex(')');return e}throw`Unexpected '${t.v}'`};
+const TY=['struct','int','float','double','char','long','short','unsigned'];
+const decl=()=>{let ty=nx().v;if(ty=='struct')ty=nx().v;else while(T[i]&&T[i].t=='i'&&TY.includes(T[i].v))i++;const r=[];
+for(;;){let pt=0;while(isO('*')){i++;pt=1}const nm=nx();if(!nm||nm.t!='i')throw'Variable name expected';let sz=null,ar=0,init=null;
+if(isO('[')){i++;ar=1;if(!isO(']'))sz=asg();ex(']')}
+if(isO('=')){i++;if(isO('{')){i++;const a=[];while(!isO('}')){a.push(asg());if(isO(','))i++}i++;init=['L',a]}else init=asg()}
+r.push(['D',ty,nm.v,sz,init,ar,pt]);if(isO(',')){i++;continue}ex(';');break}return['B',r]};
+const st=()=>{
+if(isO('{')){i++;const b=[];while(!isO('}')){if(!T[i])throw'Missing "}"';b.push(st())}i++;return['B',b]}
+if(isO(';')){i++;return['B',[]]}
+const t=pk();if(!t)throw'Incomplete code';
+if(t.t=='i'){
+if(TY.includes(t.v))return decl();
+if(t.v=='if'){i++;ex('(');const c=asg();ex(')');const a=st();let e=null;if(isI('else')){i++;e=st()}return['I',c,a,e]}
+if(t.v=='while'){i++;ex('(');const c=asg();ex(')');return['W',c,st()]}
+if(t.v=='for'){i++;ex('(');let a=null;if(isO(';'))i++;else if(TY.includes(pk().v))a=decl();else{a=['E',asg()];ex(';')}
+const c=isO(';')?['n',1]:asg();ex(';');const s=isO(')')?null:asg();ex(')');return['F',a,c,s,st()]}
+if(t.v=='return'){i++;let v=null;if(!isO(';'))v=asg();ex(';');return['R',v]}
+if(t.v=='break'){i++;ex(';');return['K']}
+if(t.v=='continue'){i++;ex(';');return['N']}}
+const e=asg();ex(';');return['E',e]};
+const F={};
+const ST={};
+while(i<T.length){if(isI('struct')&&T[i+2]&&T[i+2].v=='{'){i++;const tg=nx().v,fs=[];i++;while(!isO('}')){if(!T[i])throw'Missing "}"';nx();while(T[i]&&T[i].t=='i'&&TY.includes(T[i].v))i++;while(isO('*'))i++;fs.push(nx().v);ex(';')}i++;ex(';');ST[tg]=fs;continue}
+const rt=nx();if(rt.t!='i')throw'Function expected';while(T[i]&&T[i].t=='i'&&TY.includes(T[i].v))i++;while(isO('*'))i++;const nm=nx();if(!nm||nm.t!='i')throw'Function name expected';ex('(');const ps=[];
+while(!isO(')')){if(!T[i])throw'Missing ")"';if(isI('void')){i++;continue}let pt=nx().v;if(pt=='struct')pt=nx().v;while(T[i]&&T[i].t=='i'&&TY.includes(T[i].v))i++;while(isO('*'))i++;const pn=nx().v;if(isO('[')){i++;ex(']')}ps.push([pt,pn]);if(isO(','))i++}
+i++;F[nm.v]={p:ps,b:st()}}
+if(!F.main)throw'main() not found';
+let V={},Ty={};
+const cast=(t,v)=>typeof v!='number'||t=='float'||t=='double'?v:Math.trunc(v);
+const ap=(o,a,b)=>{if((o=='+'||o=='-')&&typeof b=='number'){const q=o=='+'?b:-b;if(Array.isArray(a))return{r:a,k:q};if(a&&a.r!==undefined&&typeof a.k=='number')return{r:a.r,k:a.k+q}}switch(o){case'+':return a+b;case'-':return a-b;case'*':return a*b;case'/':if(!b)throw'Division by zero';return Number.isInteger(a)&&Number.isInteger(b)?Math.trunc(a/b):a/b;case'%':return a%b;case'<':return+(a<b);case'>':return+(a>b);case'<=':return+(a<=b);case'>=':return+(a>=b);case'==':return+(a==b);case'!=':return+(a!=b)}};
+const ix=(a,k)=>{if(a&&!Array.isArray(a)&&Array.isArray(a.r)){k+=a.k;a=a.r}if(!Array.isArray(a)||k<0||k>=a.length)throw'Array index out of range';return[a,k]};
+const mo=(o,f)=>{if(!o||typeof o!='object'||!(f in o))throw`No field '${f}' in struct`;return o};
+const set=(t,v)=>{if(t[0]=='v'){if(!(t[1] in V))throw`'${t[1]}' is not declared`;return V[t[1]]=cast(Ty[t[1]],v)}
+if(t[0]=='x'){const[q,k]=ix(ev(t[1]),ev(t[2]));return q[k]=cast(Ty[t[1][1]],v)}
+if(t[0]=='*'){const p=ev(t[1]);if(Array.isArray(p))return p[0]=v;if(!p||p.r===undefined)throw'Invalid pointer';return p.r[p.k]=v}
+if(t[0]=='m')return mo(ev(t[1]),t[2])[t[2]]=v;throw'Invalid assignment'};
+const ev=n=>{switch(n[0]){
+case'n':case's':return n[1];
+case'v':if(!(n[1] in V))throw`'${n[1]}' is not declared`;return V[n[1]];
+case'x':{const[q,k]=ix(ev(n[1]),ev(n[2]));return q[k]}
+case'b':if(n[1]=='&&')return ev(n[2])&&ev(n[3])?1:0;if(n[1]=='||')return ev(n[2])||ev(n[3])?1:0;return ap(n[1],ev(n[2]),ev(n[3]));
+case'!':return+!ev(n[1]);
+case'*':{const p=ev(n[1]);if(Array.isArray(p))return p[0];if(!p||p.r===undefined)throw'Invalid pointer';return p.r[p.k]}
+case'&':{const x=n[1];if(x[0]=='v'){if(!(x[1] in V))throw`'${x[1]}' is not declared`;const w=V[x[1]];return typeof w=='object'?w:{r:V,k:x[1]}}if(x[0]=='x'){const[q,k]=ix(ev(x[1]),ev(x[2]));return{r:q,k}}if(x[0]=='m')return{r:mo(ev(x[1]),x[2]),k:x[2]};throw'Invalid use of &'}
+case'm':return mo(ev(n[1]),n[2])[n[2]];
+case'a':{let v=ev(n[3]);if(n[1]!='=')v=ap(n[1][0],ev(n[2]),v);return set(n[2],v)}
+case'p':{const o=ev(n[2]);set(n[2],ap(n[1],o,1));return o}
+case'c':{const a=n[2].map(ev);if(F[n[1]])return call(F[n[1]],a);if(n[1]=='strlen'){let q=0;while(a[0][q])q++;return q}if(n[1]!='printf')throw`${n[1]}() not supported`;let k=1;
+out+=String(a[0]).replace(/%([-0]?\d*)(?:\.(\d+))?(?:ll|l)?([dicfsu%])/g,(m,w,pr,c)=>{if(c=='%')return'%';const v=a[k++];
+let s=c=='c'?String.fromCharCode(v):c=='f'?(+v).toFixed(pr??6):c=='s'?(Array.isArray(v)?v.slice(0,v.indexOf(0)<0?v.length:v.indexOf(0)).map(x=>String.fromCharCode(x)).join(''):v):String(Math.trunc(v));
+if(w){const wd=Math.abs(parseInt(w)||0);s=w[0]=='-'?s.padEnd(wd):s.padStart(wd,w[0]=='0'?'0':' ')}return s});
+if(out.length>3000)throw'Output too long';return 0}}};
+const run=n=>{if(++steps>2e5)throw'Infinite loop!';
+switch(n[0]){
+case'B':for(const s of n[1])run(s);break;
+case'E':ev(n[1]);break;
+case'D':{const[,ty,nm,sz,init,ar,pt]=n;Ty[nm]=ty;if(ST[ty]&&!pt){const o={};ST[ty].forEach((f,k)=>o[f]=init&&init[0]=='L'&&k<init[1].length?ev(init[1][k]):0);V[nm]=o;break}if(ar){const a=init?(init[0]=='s'?[...init[1]].map(c=>c.charCodeAt(0)).concat(0):init[1].map(ev)):null;const len=sz?ev(sz):a.length;V[nm]=Array.from({length:len},(_,j)=>a&&j<a.length?cast(ty,a[j]):0)}else{let v=init?ev(init):0;if(pt&&Array.isArray(v))v={r:v,k:0};V[nm]=pt?v:cast(ty,v)}break}
+case'I':if(ev(n[1]))run(n[2]);else if(n[3])run(n[3]);break;
+case'W':while(ev(n[1])){try{run(n[2])}catch(e){if(e=='K')break;if(e!='N')throw e}}break;
+case'F':if(n[1])run(n[1]);while(ev(n[2])){try{run(n[4])}catch(e){if(e=='K')break;if(e!='N')throw e}if(n[3])ev(n[3]);steps++}break;
+case'R':throw{r:n[1]?ev(n[1]):0};case'K':throw'K';case'N':throw'N'}};
+let dp=0;
+const call=(f,a)=>{if(a.length!=f.p.length)throw'Wrong number of arguments';if(++dp>150)throw'Recursion too deep';const sv=[V,Ty];V={};Ty={};f.p.forEach((q,k)=>{Ty[q[1]]=q[0];V[q[1]]=cast(q[0],a[k])});
+let rv=0;try{run(f.b)}catch(e){if(e&&e.r!==undefined)rv=e.r;else if(e!='K'&&e!='N')throw e}V=sv[0];Ty=sv[1];dp--;return rv};
+call(F.main,[]);
+return{out,err:null};
+}catch(e){return{out,err:typeof e=='string'?e:'Error: '+e.message}}}
+/* ---------- Problems ---------- */
+const LV=['printf','Variables','Loops','if-else','Arrays','Functions','Strings','Pointers','Structs'];
+const HN=['Use printf("text\\n");','Declare variables, print with %d','Use a for loop','Use if / else','Access items with a[i]','Write int f(int n){ return ...; }','s[i] is one char; the string ends at 0','Use &x and *p','Use v.a or p->a'];
+let P=[],EN=1;
+/* ---------- Random problem generator: [time, description, solution, template] ---------- */
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),pick=a=>a[R(0,a.length-1)],ra=(n,a,b)=>Array.from({length:n},()=>R(a,b));
+const WD=['zombie','brains','undead','survive','shotgun','graveyard','horror','apocalypse'];
+const FN=[['square','int n','return n*n;','n squared',1],['cube','int n','return n*n*n;','n cubed',1],['add','int a, int b','return a+b;','a+b',2],['mul','int a, int b','return a*b;','a*b',2],['bigger','int a, int b','if(a>b) return a;\n  return b;','the larger of a and b',2],['sumTo','int n','if(n<=0) return 0;\n  return n+sumTo(n-1);','1+2+...+n',1]];
+const mn=(c,a)=>`int main() {\n  printf("%d", ${c}(${a}));\n  return 0;\n}`;
+const SS=[['Zombie','hp','speed'],['Player','score','lives'],['Gun','ammo','damage']];
+const G={
+1:[()=>{const w=pick(WD);return[40,`Print <code>${w}</code>`,`printf("${w}\\n");`]},
+()=>{const n=R(10,9999);return[50,`Print <code>Score: ${n}</code> using %d`,`printf("Score: %d\\n", ${n});`]},
+()=>{const a=pick(WD),b=pick(WD);return[60,`Print <code>${a}</code>, then <code>${b}</code> on the next line`,`printf("${a}\\n");\nprintf("${b}\\n");`]},
+()=>{const c=ra(3,65,72).map(x=>String.fromCharCode(x));return[60,`Print <code>${c.join('')}</code> using %c`,`printf("%c%c%c", '${c[0]}', '${c[1]}', '${c[2]}');`]}],
+2:[()=>{const a=R(2,40),b=R(2,40),o=pick(['+','-','*']);return[60,`<b>a=${a}, b=${b}</b>. Print <code>a ${o} b</code>`,`int a=${a}, b=${b};\nprintf("%d", a${o}b);`]},
+()=>{const l=R(2,15),w=R(2,15);return[60,`Rectangle <b>${l} × ${w}</b>. Print <code>Area = ...</code>`,`int l=${l}, w=${w};\nprintf("Area = %d", l*w);`]},
+()=>{const a=R(20,99),b=R(3,9);return[80,`<b>a=${a}, b=${b}</b>. Print <code>Q=... R=...</code> (quotient, remainder)`,`int a=${a}, b=${b};\nprintf("Q=%d R=%d", a/b, a%b);`]}],
+3:[()=>{const n=R(4,9);return[60,`Print <b>1 to ${n}</b>, space-separated`,`for(int i=1;i<=${n};i++) printf("%d ", i);`]},
+()=>{const n=R(5,20);return[70,`Print the sum of <b>1 to ${n}</b>: <code>Sum = ...</code>`,`int s=0;\nfor(int i=1;i<=${n};i++) s+=i;\nprintf("Sum = %d", s);`]},
+()=>{const k=R(2,9),m=R(4,7);return[80,`Print the first <b>${m} multiples of ${k}</b>, space-separated`,`for(int i=1;i<=${m};i++) printf("%d ", ${k}*i);`]},
+()=>{const n=R(3,8);return[80,`Count down <b>${n} to 1</b>, then print <code>Fire!</code>`,`for(int i=${n};i>=1;i--) printf("%d ", i);\nprintf("Fire!");`]}],
+4:[()=>{const n=R(1,99);return[60,`<b>n=${n}</b>. Print <code>Odd</code> or <code>Even</code>`,`int n=${n};\nif(n%2==0) printf("Even");\nelse printf("Odd");`]},
+()=>{let a=R(1,50),b=R(51,99);if(R(0,1))[a,b]=[b,a];return[70,`<b>a=${a}, b=${b}</b>. Print <code>Max = ...</code>`,`int a=${a}, b=${b};\nif(a>b) printf("Max = %d", a);\nelse printf("Max = %d", b);`]},
+()=>{const m=R(0,100);return[70,`<b>marks=${m}</b>. Print <code>Pass</code> if marks &gt;= 40, else <code>Fail</code>`,`int m=${m};\nif(m>=40) printf("Pass");\nelse printf("Fail");`]},
+()=>{const k=R(2,5),n=R(8,12);return[110,`Print <b>1 to ${n}</b>, space-separated. Replace multiples of ${k} with <code>Zombie</code>`,`for(int i=1;i<=${n};i++){\n  if(i%${k}==0) printf("Zombie ");\n  else printf("%d ", i);\n}`]}],
+5:[()=>{const a=ra(5,1,9);return[80,`<code>int a[5]={${a}};</code> Print the sum: <code>Sum = ...</code>`,`int a[5]={${a}}, s=0;\nfor(int i=0;i<5;i++) s+=a[i];\nprintf("Sum = %d", s);`]},
+()=>{const a=ra(5,1,9);return[90,`<code>int a[5]={${a}};</code> Print the largest: <code>Max = ...</code>`,`int a[5]={${a}}, m=a[0];\nfor(int i=1;i<5;i++) if(a[i]>m) m=a[i];\nprintf("Max = %d", m);`]},
+()=>{const a=ra(5,1,9);return[90,`<code>int a[5]={${a}};</code> Print it reversed, space-separated`,`int a[5]={${a}};\nfor(int i=4;i>=0;i--) printf("%d ", a[i]);`]},
+()=>{const a=ra(6,1,9),x=R(3,7);return[100,`<code>int a[6]={${a}};</code> Count items greater than <b>${x}</b>: <code>Count = ...</code>`,`int a[6]={${a}}, c=0;\nfor(int i=0;i<6;i++) if(a[i]>${x}) c++;\nprintf("Count = %d", c);`]}],
+6:[()=>{const[nm,pr,bd,ds,c]=pick(FN),ar=ra(c,2,9).join(', ');return[110,`Write <code>${nm}(${pr})</code> returning ${ds}. main prints <code>${nm}(${ar})</code>`,`int ${nm}(${pr}) {\n  ${bd}\n}\n\n${mn(nm,ar)}`,`int ${nm}(${pr}) {\n  \n}\n\n${mn(nm,ar)}`]}],
+7:[()=>{const w=pick(WD);return[60,`Create <code>char s[]="${w}";</code> and print it with <code>%s</code>`,`char s[]="${w}";\nprintf("%s", s);`]},
+()=>{const w=pick(WD);return[90,`Length of <code>char s[]="${w}";</code> <b>without strlen</b>: <code>Length = ...</code>`,`char s[]="${w}";\nint n=0;\nwhile(s[n]!=0) n++;\nprintf("Length = %d", n);`]},
+()=>{const w=pick(WD);return[110,`Print <code>char s[]="${w}";</code> reversed`,`char s[]="${w}";\nint n=strlen(s);\nfor(int i=n-1;i>=0;i--) printf("%c", s[i]);`]},
+()=>{const w=pick(WD),c=pick(w.split(''));return[100,`Count <code>'${c}'</code> in "${w}": <code>Count = ...</code>`,`char s[]="${w}";\nint c=0;\nfor(int i=0;s[i]!=0;i++) if(s[i]=='${c}') c++;\nprintf("Count = %d", c);`]}],
+8:[()=>{const x=R(1,50),y=R(51,99);return[80,`<code>int x=${x};</code> Set x to <b>${y}</b> through a pointer <code>p=&amp;x</code>, then print x`,`int x=${x};\nint *p=&x;\n*p=${y};\nprintf("%d", x);`]},
+()=>{const x=R(1,9),y=R(10,20),m=`int main() {\n  int x=${x}, y=${y};\n  swap(&x, &y);\n  printf("%d %d", x, y);\n  return 0;\n}`;return[120,`Write <code>swap(int *a, int *b)</code>. main swaps x=${x}, y=${y}`,`void swap(int *a, int *b) {\n  int t=*a;\n  *a=*b;\n  *b=t;\n}\n\n${m}`,`void swap(int *a, int *b) {\n  \n}\n\n${m}`]},
+()=>{const a=ra(4,1,9);return[100,`<code>int a[4]={${a}}; int *p=a;</code> Sum with <code>*(p+i)</code>: <code>Sum = ...</code>`,`int a[4]={${a}}, s=0;\nint *p=a;\nfor(int i=0;i<4;i++) s+=*(p+i);\nprintf("Sum = %d", s);`]},
+()=>{const x=R(1,30),k=R(2,9);return[80,`<code>int x=${x};</code> Add <b>${k}</b> through a pointer (<code>*p</code>), then print x`,`int x=${x};\nint *p=&x;\n*p=*p+${k};\nprintf("%d", x);`]}],
+9:[()=>{const[n,a,b]=pick(SS),x=R(10,99),y=R(1,9),d=`struct ${n} {\n  int ${a};\n  int ${b};\n};\n\nint main() {\n`;return[100,`<code>struct ${n} v</code>: ${a}=${x}, ${b}=${y}. Print <code>${a}=... ${b}=...</code>`,`${d}  struct ${n} v;\n  v.${a}=${x};\n  v.${b}=${y};\n  printf("${a}=%d ${b}=%d", v.${a}, v.${b});\n  return 0;\n}`,`${d}  \n  return 0;\n}`]},
+()=>{const[n,a]=pick(SS),x=R(50,150),k=R(5,40),h=`struct ${n} {\n  int ${a};\n};\n\nvoid hit(struct ${n} *v) {\n`,m=`}\n\nint main() {\n  struct ${n} v={${x}};\n  hit(&v);\n  printf("%d", v.${a});\n  return 0;\n}`;return[130,`Write <code>hit(struct ${n} *v)</code> subtracting ${k} from <b>${a}</b> (<code>v-&gt;${a}</code>). Starts at ${x}; print after hit`,`${h}  v->${a} = v->${a} - ${k};\n${m}`,`${h}  \n${m}`]}]};
+function gen(l,n=0){let p;for(let k=0;k<9;k++){const[t,d,s,tp]=pick(G[l].slice(0,Math.min(G[l].length,2+Math.floor(n/3))))();p={l,t:Math.max(25,Math.round(t*Math.max(.55,1-n*.03))),d,s,tp};p.e=runC(s).out;if(p.e&&(!P.length||P[P.length-1].d!=d))break}return p}
+const norm=s=>s.trim().split('\n').map(x=>x.trimEnd()).join('\n').replace(/[ \t]+/g,' ');
+/* ---------- UI ---------- */
+const TPL='#include <stdio.h>\n\nint main() {\n  \n  return 0;\n}';
+const ta=$('ta'),cv=$('cv'),cx=cv.getContext('2d'),PX=34;
+let W=300,H=120,g={st:'idle'},best=0;
+try{best=+localStorage.getItem('czc_best')||0}catch(e){}
+const rs=()=>{const d=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0)};
+addEventListener('resize',rs);
+$('lv').innerHTML=LV.map((n,k)=>`<button class="${k?'':'p'}" data-l="${k+1}">Level ${k+1}: ${n}</button>`).join('');
+$('best').textContent=best?'🏆 Best score: '+best:'';
+$('lv').onclick=e=>{const l=e.target.dataset.l;if(l){if(!NAME)return askName();start(+l,EN)}};
+
+const SY=[['{'],['}'],['('],[')'],[';'],['"'],['%'],['&'],['*'],['='],['<'],['>'],['['],[']'],['\\n'],['printf','printf("");',8],['for','for(int i=0; i<; i++) {\n  \n}',15]];
+$('sym').innerHTML=SY.map((s,k)=>`<button data-k="${k}">${esc(s[0])}</button>`).join('');
+$('sym').onpointerdown=e=>e.preventDefault();
+$('sym').onclick=e=>{const k=e.target.dataset.k;if(k==null)return;const s=SY[k],t=s[1]||s[0],a=ta.selectionStart;ta.setRangeText(t,a,ta.selectionEnd,'end');if(s[2]!=null)ta.selectionStart=ta.selectionEnd=a+s[2];ta.focus()};
+function nxt(){g.i++;if(g.en&&g.i>=P.length)P.push(gen(g.lv,g.solved));if(g.i>=P.length){g.i=P.length-1;fin(true)}else load()}
+function start(l){au();P=[gen(l)];g={st:'play',en:1,lv:l,i:0,score:0,solved:0,at:0,wr:0,zx:W,lives:3,fails:[],sl:l,dv:.7};$('menu').hidden=true;$('res').hidden=true;$('game').hidden=false;rs();load()}
+function load(){const p=P[g.i];g.left=g.dur=p.t;g.st='play';g.hinted=0;ta.value=p.tp||TPL;$('prob').innerHTML=`<div class="lbl">Level ${p.l} • Problem ${g.i+1}${g.en?'':'/'+P.length}</div>${p.d}`;$('exp').textContent=p.e;$('out').textContent='';$('out').className=''}
+$('hint').onclick=()=>{if(g.st!='play'||g.pz||g.hinted)return;g.hinted=1;g.left=Math.max(1,g.left-5);$('prob').innerHTML+=`<div style="color:var(--y);margin-top:6px">💡 ${esc(HN[P[g.i].l-1])}</div>`};
+$('run').onclick=()=>{if(g.st!='play'||g.pz)return;const p=P[g.i],r=runC(ta.value),o=$('out');g.at++;
+if(r.err){sfx('w');o.className='e';o.textContent=(r.out?r.out+'\n':'')+'⚠ '+r.err;g.wr++;g.left=Math.max(1,g.left-3);return}
+o.className='';o.textContent=r.out||'(no output)';
+if(norm(r.out)==norm(p.e)){g.score+=10+Math.ceil(g.left)+(g.hinted?0:5);g.solved++;bump();g.st='shoot';g.bx=PX+44;sfx('s')}
+else{sfx('w');g.wr++;g.left=Math.max(1,g.left-3);o.className='e';o.textContent+='\n❌ Wrong output (-3s)'}};
+const LP=d=>{const t=d/1.15;return[PX+50+(W-PX-70)*t,H-14-H*.2*t,1-.45*t]};
+function fin(){sfx('l');g.st='done';$('game').hidden=true;
+if(g.score>best){best=g.score;try{localStorage.setItem('czc_best',best)}catch(e){}}
+const fl=g.fails.slice(0,3).map(k=>`<p>${P[k].d}</p><pre>${esc(P[k].s)}</pre>`).join('');
+$('res').innerHTML=`<div><h2>💀 Game over</h2><div class="st"><div><b>${g.solved}</b>solved</div><div><b>${g.score}</b>score</div><div><b>${best}</b>best</div></div>${fl?'<div class="lbl">Missed</div>'+fl:''}<div class="row"><button class="p" onclick="start(${g.sl})">↻ Again</button><button onclick="openLB(${g.lv})">🏆</button><button onclick="$('res').hidden=true;$('menu').hidden=false;sb()">Menu</button></div></div>`;$('res').hidden=false}
+let last=0;
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.1,(now-last)/1e3||0);last=now;try{if(g.st!='idle'&&g.st!='done')upd(dt);draw(now)}catch(e){console.error(e)}}
+function upd(dt){if(g.pz)return;
+if(g.st=='play'){g.left-=dt;g.dv+=(.06+.62*g.left/g.dur-g.dv)*Math.min(1,dt*8);[g.zx,g.zy]=LP(g.dv);if(g.left<10&&Math.ceil(g.left)!=g.lt){g.lt=Math.ceil(g.left);tone(900,.05,'sine',.1)}if(g.left<=0){g.left=0;g.lives--;g.fails.push(g.i);g.st='dead';g.tm=1;g.dv=.02;[g.zx,g.zy]=LP(.02);sfx('b')}}
+else if(g.st=='shoot'){g.bx+=900*dt;if(g.bx>=g.zx){g.st='boom';g.tm=.5;sfx('k')}}
+else if(g.st=='boom'){g.tm-=dt;if(g.tm<=0)nxt()}
+else if(g.st=='dead'){g.tm-=dt;if(g.tm<=0){if(g.lives<=0)fin(false);else nxt()}}
+const p=P[g.i];$('hl').textContent=`Lvl ${p.l} • ${g.i+1}${g.en?'':'/'+P.length} `+'❤️'.repeat(Math.max(0,g.lives));$('hs').textContent='⭐ '+g.score+(g.en?' 🔥'+(1+Math.floor(g.solved/3)):'');$('ht').textContent='⏱ '+Math.ceil(g.left)+'s';
+const f=g.left/g.dur;$('fill').style.width=f*100+'%';const c=f<.3?'var(--r)':f<.6?'var(--y)':'var(--g)';$('fill').style.background=c;$('ht').style.color=f<.3?'var(--r)':''}
+const em=(e,x,y,s)=>{cx.font=s+'px serif';cx.textAlign='center';cx.fillText(e,x,y)};
+function draw(now){if(g.st=='idle'||$('game').hidden)return;const gy=H-14,hz=H*.5,s=Math.min(46,H*.4);
+cx.fillStyle='#101820';cx.fillRect(0,0,W,H);em('🌕',W-30,24,22);
+cx.fillStyle='#1c2b1c';cx.fillRect(0,hz,W,H-hz);cx.strokeStyle='#2c402c';cx.beginPath();for(let k=0;k<6;k++){cx.moveTo(W*.9,hz);cx.lineTo(k*W*.25-W*.2,H)}cx.stroke();
+for(let j=8;j>=0;j--){const[x,y,sc]=LP(g.dv+.08*j);if(x>W+10)continue;if(j==0&&g.st=='boom')em('💥',x,y,s*1.2);else em('🧟',x+Math.sin(now/120+j)*2,y+(j?((j*37)%3-1)*5:0),s*sc)}
+em(g.st=='dead'?(g.lives>0?'😵':'💀'):'🧑',PX,gy,s);cx.fillStyle='#9aa';cx.fillRect(PX+14,gy-s*.5,26,6);
+if(g.st=='shoot'){em('✨',PX+46,gy-s*.4,18);const u=Math.min(1,(g.bx-PX)/((g.zx-PX)||1)),y0=gy-s*.5;cx.fillStyle='#ffd54a';cx.fillRect(g.bx,y0+(g.zy-s*.4-y0)*u,12,3)}
+if(g.st=='dead'){cx.fillStyle='#f004';cx.fillRect(0,0,W,H)}}
+/* ---------- Sound ---------- */
+let AC,snd=1,mus=1,ms=0;
+const au=()=>{if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}if(AC&&AC.state=='suspended')AC.resume();return AC};
+const tone=(f,d,ty='square',v=.15,f2,m)=>{if(!(m?mus:snd))return;const a=au();if(!a)return;const t=a.currentTime,o=a.createOscillator(),n=a.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);n.gain.setValueAtTime(v,t);n.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(n);n.connect(a.destination);o.start(t);o.stop(t+d)};
+const nz=(d,v)=>{if(!snd)return;const a=au();if(!a)return;const b=a.createBuffer(1,a.sampleRate*d,a.sampleRate),c=b.getChannelData(0);for(let k=0;k<c.length;k++)c[k]=(Math.random()*2-1)*(1-k/c.length);const s=a.createBufferSource(),n=a.createGain();n.gain.value=v;s.buffer=b;s.connect(n);n.connect(a.destination);s.start()};
+function sfx(k){if(k=='s'){nz(.12,.3);tone(700,.12,'sawtooth',.1,90)}else if(k=='k'){tone(220,.35,'sawtooth',.18,40);nz(.3,.25)}else if(k=='w')tone(160,.25,'square',.12,110);else if(k=='b'){tone(130,.6,'sawtooth',.25,45);nz(.4,.3);navigator.vibrate&&navigator.vibrate(200)}else if(k=='v')[523,659,784,1047].forEach((f,j)=>setTimeout(()=>tone(f,.25,'triangle',.15),j*130));else[300,250,200,150].forEach((f,j)=>setTimeout(()=>tone(f,.3,'sawtooth',.15),j*180))}
+const NT=[110,0,110,131,0,110,98,0,82,0,82,98,0,110,131,147];
+setInterval(()=>{if(!mus||!AC||g.pz||g.st=='idle'||g.st=='done')return;const f=NT[ms++%16];if(f)tone(f,.32,'triangle',.11,0,1);if(ms%4==0)tone((NT[(ms>>2)%16]||110)*4,.1,'sine',.03,0,1)},280);
+$('bs').onclick=e=>{snd=!snd;e.target.textContent=snd?'🔊':'🔇'};$('bm').onclick=e=>{mus=!mus;e.target.textContent=mus?'🎵':'🚫'};
+/* ---------- Name + Leaderboard (accounts via /api/lb) ---------- */
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}return null};
+const rk=()=>{const a=new Uint8Array(12);crypto.getRandomValues(a);return[...a].map(x=>x.toString(16).padStart(2,'0')).join('')};
+let NAME=ls('czc_name')||'',TK=ls('czc_tk')||rk(),myS={},LOC={},SHL={},LL=1;ls('czc_tk',TK);
+try{myS=JSON.parse(ls('czc_my')||'{}');LOC=JSON.parse(ls('czc_lb')||'{}')}catch(e){}
+const who=()=>{$('who').innerHTML=NAME?`👤 <b>${esc(NAME)}</b> <button id="cn" class="tg">✏️</button>`:'';const c=$('cn');if(c)c.onclick=askName};
+function askName(err){$('ni').value=NAME;$('ne').textContent=err||'';$('nm').hidden=false}
+const api=async b=>{const r=await fetch('/api/lb',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({...b,token:TK})});return{s:r.status}};
+$('nb').onclick=async()=>{const v=$('ni').value.trim().slice(0,20);if(!v){$('ni').focus();return}
+let r=null;try{r=await api(NAME&&NAME!=v?{a:'rename',name:NAME,newName:v}:{a:'join',name:v})}catch(e){}
+if(r&&r.s==409){$('ne').textContent='Name already taken';return}
+if(NAME&&NAME!=v&&LOC[NAME]){LOC[v]={...LOC[NAME],name:v};delete LOC[NAME]}
+NAME=v;ls('czc_name',v);$('nm').hidden=true;who();persist()};
+$('ni').onkeydown=e=>{if(e.key=='Enter')$('nb').click()};
+if(!NAME)askName();who();
+async function push(lv){if(!NAME||!myS[lv])return;try{const r=await api({a:'score',name:NAME,level:+lv,score:myS[lv]});if(r.s==409){NAME='';myS={};ls('czc_name','');ls('czc_my','{}');who();askName('Name already taken')}}catch(e){}}
+function persist(lv){if(!NAME)return;ls('czc_my',JSON.stringify(myS));LOC[NAME]={name:NAME,s:myS};ls('czc_lb',JSON.stringify(LOC));if(lv)push(lv)}
+function bump(){const b=Math.max(myS[g.lv]||0,g.score);if(b>(myS[g.lv]||0)){myS[g.lv]=b;persist(g.lv)}}
+async function loadLB(k){try{const r=await fetch('/api/lb?level='+k);if(!r.ok)throw 0;SHL[k]=(await r.json()).rows}catch(e){SHL[k]=null}if(!$('lbo').hidden&&LL==k)renderLB()}
+const mine=r=>r.name==NAME?' me':'';
+function rows(k){const a=SHL[k];return(a?a.map(r=>({name:r.name,v:r.score})):Object.values(LOC).map(r=>({name:r.name,v:+((r.s||{})[k])||0}))).filter(r=>r.v>0).sort((a,b)=>b.v-a.v)}
+function renderLB(){const rs=rows(LL),md=['🥇','🥈','🥉'];
+$('lbc').innerHTML=LV.map((n,k)=>`<button class="${k+1==LL?'p':''}" data-k="${k+1}">L${k+1}</button>`).join('');
+$('lbl').innerHTML=`<div class="lbt">Level ${LL}: ${LV[LL-1]}</div>`+(rs.length?rs.slice(0,3).map((r,i)=>`<div class="pod p${i}${mine(r)}"><span>${md[i]} ${esc(r.name)}</span><b>${r.v}</b></div>`).join('')+rs.slice(3).map((r,i)=>`<div class="rw${mine(r)}"><span>${i+4}. ${esc(r.name)}</span><b>${r.v}</b></div>`).join(''):'<p style="color:var(--mut)">No scores yet</p>');
+$('lbs').textContent=SHL[LL]?'':'Offline: this device only'}
+function openLB(k){LL=k||LL;renderLB();$('lbo').hidden=false;loadLB(LL)}
+$('lbb').onclick=()=>openLB(1);
+$('lbc').onclick=e=>{const k=e.target.dataset.k;if(k){LL=+k;renderLB();loadLB(LL)}};
+$('lbx').onclick=()=>{$('lbo').hidden=true};
+setInterval(()=>{if(!$('lbo').hidden)loadLB(LL)},15000);
+/* ---------- Pause / Resume / Leave ---------- */
+const sb=()=>$('best').textContent=best?'🏆 Best score: '+best:'';
+function pause(){if(g.st=='idle'||g.st=='done'||g.pz)return;g.pz=1;ta.blur();$('ps').hidden=false}
+function resume(){g.pz=0;$('ps').hidden=true}
+$('bp').onclick=pause;$('rsm').onclick=resume;
+$('lvg').onclick=()=>{if(g.score>best){best=g.score;try{localStorage.setItem('czc_best',best)}catch(e){}}g.pz=0;g.st='done';$('ps').hidden=true;$('game').hidden=true;$('menu').hidden=false;sb()};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
+addEventListener('keydown',e=>{if(e.key=='Escape')g.pz?resume():pause()});
+requestAnimationFrame(frame);
+</script></body></html>
